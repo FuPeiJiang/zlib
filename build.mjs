@@ -2,7 +2,9 @@ import { existsSync, readdirSync } from "fs";
 import { spawnSync } from "child_process"
 import { cpus } from "os"
 import { fileURLToPath } from "url";
-import { join } from "path";
+import { dirname, join } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function get_default_toolchain_name() {
     return {
@@ -314,7 +316,7 @@ function frfr() {
 }
 
 export function hello(lol,toolchain,toolchain_name,idkArgs={}) {
-    toolchain.push_cwd(import.meta.dirname,".")
+    toolchain.push_cwd(__dirname,".")
 
     switch (toolchain_name) {
         case "msvc":{
