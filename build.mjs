@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from "fs";
 import { spawnSync } from "child_process"
 import { cpus } from "os"
 import { fileURLToPath } from "url";
+import { join } from "path";
 
 function get_default_toolchain_name() {
     return {
@@ -24,6 +25,14 @@ function get_toolchain(toolchain_name,architecture) {
 
     if (!architecture) {
         architecture=get_default_architecture()
+    }
+
+    function push_cwd(dirname,relativePath) {
+        this.cwd_arr.push(this.cwd)
+        this.cwd = join(dirname,relativePath)
+    }
+    function pop_cwd() {
+        this.cwd = this.cwd_arr.pop()
     }
 
     switch (toolchain_name) {
@@ -71,17 +80,18 @@ function get_toolchain(toolchain_name,architecture) {
                 type:"msvc",
                 msvc,
                 CC: function CC(a) {
-                    return {c:CC_PATH,a:[...INCLUDE, ...a]}
+                    return {c:CC_PATH,a:[...INCLUDE, ...a],w:{cwd:this.cwd}}
                 },
                 RC: function RC(a) {
-                    return {c:RC_PATH,a:[...RC_INCLUDE, ...a]}
+                    return {c:RC_PATH,a:[...RC_INCLUDE, ...a],w:{cwd:this.cwd}}
                 },
                 AR: function AR(a) {
-                    return {c:LIB_PATH,a:a}
+                    return {c:LIB_PATH,a:a,w:{cwd:this.cwd}}
                 },
                 LD: function LD(a) {
-                    return {c:LINK_PATH,a:[...LIB, ...a]}
+                    return {c:LINK_PATH,a:[...LIB, ...a],w:{cwd:this.cwd}}
                 },
+                cwd:null,cwd_arr:[],push_cwd,pop_cwd,
             }
     }
 }
@@ -280,8 +290,8 @@ function frfr() {
                 bucketQueue.removeMax()
             }
             new Promise(()=>{
-                const ok = spawnSync(obj.c,obj.a)
-                //console.log(obj.c,obj.a.join(" "))
+                const ok = spawnSync(obj.c,obj.a,obj.w)
+                console.log(`${obj.w.cwd}>${obj.c}`,obj.a.join(" "))
                 console.log(ok.stdout.toString())
                 if (value.i === value.b.length) {
                     if (value.D) {
@@ -303,7 +313,8 @@ function frfr() {
     }
 }
 
-export function hello(lol,toolchain,toolchain_name) {
+export function hello(lol,toolchain,toolchain_name,idkArgs={}) {
+    toolchain.push_cwd(import.meta.dirname,".")
 
     switch (toolchain_name) {
         case "msvc":{
@@ -331,17 +342,21 @@ export function hello(lol,toolchain,toolchain_name) {
 
             const LINK = lol.dependent([RES,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-def:win32/zlib.def","-dll","-implib:zdll.lib","-out:zlib1.dll","-base:0x5A4C0000","adler32.obj","compress.obj","crc32.obj","deflate.obj","gzclose.obj","gzlib.obj","gzread.obj","gzwrite.obj","infback.obj","inflate.obj","inftrees.obj","inffast.obj","trees.obj","uncompr.obj","zutil.obj","zlib1.res"])])
 
-            const OBJ_EXAMPLE = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/example.c"])])
-            const OBJ_MINIGZIP = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/minigzip.c"])])
+            if (!idkArgs.skip_tests) {
+                const OBJ_EXAMPLE = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/example.c"])])
+                const OBJ_MINIGZIP = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/minigzip.c"])])
 
-            const EXE_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","example.obj","zlib.lib"])])
-            const EXE_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","minigzip.obj","zlib.lib"])])
+                const EXE_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","example.obj","zlib.lib"])])
+                const EXE_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","minigzip.obj","zlib.lib"])])
 
-            const EXE_D_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:example_d.exe","example.obj","zdll.lib"])])
-            const EXE_D_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:minigzip_d.exe","minigzip.obj","zdll.lib"])])
+                const EXE_D_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:example_d.exe","example.obj","zdll.lib"])])
+                const EXE_D_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:minigzip_d.exe","minigzip.obj","zdll.lib"])])
+            }
+
             break;
         }
     }
+    toolchain.pop_cwd()
 }
 
 //__main__
