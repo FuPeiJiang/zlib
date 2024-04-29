@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "fs";
 import { spawnSync } from "child_process"
 import { cpus } from "os"
+import { fileURLToPath } from "url";
 
 function get_default_toolchain_name() {
     return {
@@ -302,48 +303,60 @@ function frfr() {
     }
 }
 
-const lol = frfr()
-const toolchain_name = get_default_toolchain_name()
-const toolchain = get_toolchain(toolchain_name)
-//const toolchain = get_toolchain(toolchain_name,"windows-x86")
+export function hello(lol,toolchain,toolchain_name) {
 
-switch (toolchain_name) {
-    case "msvc":{
-        const OBJECTS = lol.independent([
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","adler32.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","compress.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","crc32.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","deflate.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzclose.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzlib.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzread.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzwrite.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","infback.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inflate.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inftrees.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inffast.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","trees.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","uncompr.c"]),
-            toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","zutil.c"]),
-        ])
+    switch (toolchain_name) {
+        case "msvc":{
+            const OBJECTS = lol.independent([
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","adler32.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","compress.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","crc32.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","deflate.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzclose.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzlib.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzread.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","gzwrite.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","infback.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inflate.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inftrees.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","inffast.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","trees.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","uncompr.c"]),
+                toolchain.CC(["-c","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","zutil.c"]),
+            ])
 
-        const RES = lol.independent([toolchain.RC(["/dWIN32","/r","/fozlib1.res","win32/zlib1.rc"])])
+            const RES = lol.independent([toolchain.RC(["/dWIN32","/r","/fozlib1.res","win32/zlib1.rc"])])
 
-        const LIB = lol.dependent([OBJECTS],[toolchain.AR(["-nologo","-out:zlib.lib","adler32.obj","compress.obj","crc32.obj","deflate.obj","gzclose.obj","gzlib.obj","gzread.obj","gzwrite.obj","infback.obj","inflate.obj","inftrees.obj","inffast.obj","trees.obj","uncompr.obj","zutil.obj"])])
+            const LIB = lol.dependent([OBJECTS],[toolchain.AR(["-nologo","-out:zlib.lib","adler32.obj","compress.obj","crc32.obj","deflate.obj","gzclose.obj","gzlib.obj","gzread.obj","gzwrite.obj","infback.obj","inflate.obj","inftrees.obj","inffast.obj","trees.obj","uncompr.obj","zutil.obj"])])
 
-        const LINK = lol.dependent([RES,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-def:win32/zlib.def","-dll","-implib:zdll.lib","-out:zlib1.dll","-base:0x5A4C0000","adler32.obj","compress.obj","crc32.obj","deflate.obj","gzclose.obj","gzlib.obj","gzread.obj","gzwrite.obj","infback.obj","inflate.obj","inftrees.obj","inffast.obj","trees.obj","uncompr.obj","zutil.obj","zlib1.res"])])
+            const LINK = lol.dependent([RES,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-def:win32/zlib.def","-dll","-implib:zdll.lib","-out:zlib1.dll","-base:0x5A4C0000","adler32.obj","compress.obj","crc32.obj","deflate.obj","gzclose.obj","gzlib.obj","gzread.obj","gzwrite.obj","infback.obj","inflate.obj","inftrees.obj","inffast.obj","trees.obj","uncompr.obj","zutil.obj","zlib1.res"])])
 
-        const OBJ_EXAMPLE = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/example.c"])])
-        const OBJ_MINIGZIP = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/minigzip.c"])])
+            const OBJ_EXAMPLE = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/example.c"])])
+            const OBJ_MINIGZIP = lol.independent([toolchain.CC(["-c","-I.","-D_CRT_SECURE_NO_DEPRECATE","-D_CRT_NONSTDC_NO_DEPRECATE","-nologo","-MD","-W3","-O2","-Oy-","-Zi","-Fdzlib","test/minigzip.c"])])
 
-        const EXE_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","example.obj","zlib.lib"])])
-        const EXE_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","minigzip.obj","zlib.lib"])])
+            const EXE_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","example.obj","zlib.lib"])])
+            const EXE_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LIB],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","minigzip.obj","zlib.lib"])])
 
-        const EXE_D_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:example_d.exe","example.obj","zdll.lib"])])
-        const EXE_D_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:minigzip_d.exe","minigzip.obj","zdll.lib"])])
-        break;
+            const EXE_D_EXAMPLE = lol.dependent([OBJ_EXAMPLE,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:example_d.exe","example.obj","zdll.lib"])])
+            const EXE_D_MINIGZIP = lol.dependent([OBJ_MINIGZIP,LINK],[toolchain.LD(["-nologo","-debug","-incremental:no","-opt:ref","-out:minigzip_d.exe","minigzip.obj","zdll.lib"])])
+            break;
+        }
     }
 }
 
-await lol.end()
+//__main__
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+    const args = Object.fromEntries(process.argv.slice(2).map(v=>{
+        const pos = v.indexOf("=")
+        return [v.slice(0,pos),v.slice(pos+1)]
+    }))
+
+    const lol = frfr()
+    const toolchain_name = get_default_toolchain_name()
+    const toolchain = get_toolchain(toolchain_name,args.ARCH)
+    //const toolchain = get_toolchain(toolchain_name,"windows-x86")
+    hello(lol,toolchain,toolchain_name)
+    await lol.end()
+}
+
 debugger

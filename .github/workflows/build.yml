@@ -7,6 +7,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: build
+    - name: build windows-x86_64
       run: |
-        node build.mjs
+        node build.mjs ARCH=windows-x86_64
+
+    - name: build windows-x86
+      run: |
+        node build.mjs ARCH=windows-x86
